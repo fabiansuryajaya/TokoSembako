@@ -185,6 +185,27 @@ switch ($method) {
 
         echo json_encode(['success' => true]);
         break;
+    case 'DELETE':
+        // Hapus penjualan
+        parse_str(file_get_contents('php://input'), $delete_vars);
+        $id_penjualan = isset($delete_vars['id_penjualan']) ? (int)$delete_vars['id_penjualan'] : 0;
+
+        if ($id_penjualan <= 0) {
+            http_response_code(400);
+            echo json_encode(['error' => 'ID penjualan tidak valid']);
+            exit;
+        }
+
+        // delete
+        $sql = "DELETE FROM penjualan WHERE id_penjualan = $id_penjualan";
+        if ($conn->query($sql) === FALSE) {
+            http_response_code(500);
+            echo json_encode(['error' => 'Gagal menghapus penjualan']);
+            exit;
+        }
+
+        echo json_encode(['success' => true]);
+        break;
     default:
         http_response_code(405);
         echo json_encode(['error' => 'Metode tidak diizinkan']);

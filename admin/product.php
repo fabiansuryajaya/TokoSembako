@@ -11,6 +11,7 @@
             <label for="status">Aktif</label>
         </div>
         <div class="filter">
+            <button id="export_btn">Export</button>
             <button id="save_btn">Save 0</button>
             <button id="filter_btn">Filter</button>
         </div>

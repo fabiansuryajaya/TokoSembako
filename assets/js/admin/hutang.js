@@ -131,7 +131,7 @@ $(document).ready(function () {
                     </div>
                     <div style="text-align:center;font-size:15px;margin-bottom:1mm;">
                         Jl. Raya Mastrip No.31, Kedurus, Surabaya.<br>
-                        Telp/WA: 0851-1746-6153<br>
+                        Telp/WA: 081-839-5768<br>
                     </div>
                     <hr style="border:0;border-top:1px dashed #333;margin:2mm 0;">
                     <div style="font-size:16px;margin-bottom:1mm;text-align:left;">
@@ -200,6 +200,23 @@ $(document).ready(function () {
         }
     });
 
+    // deleteHutangBtn
+    document.addEventListener('click', async function(e) {
+        if (e.target.classList.contains('deleteHutangBtn')) {
+            const idHutang = e.target.getAttribute('data-id');
+            if (confirm('Apakah Anda yakin ingin menghapus data hutang ini?')) {
+                try {
+                    const result = await callAPI({ url: `../api/hutang.php?id_hutang=${idHutang}`, method: 'DELETE' });
+                    alert(result.message);
+                    fetchHutang(); // Refresh the hutang data
+                }
+                catch (error) {
+                    console.error('Gagal menghapus hutang:', error);
+                }
+            }
+        }
+    });
+
     // get data hutang
     async function fetchHutang() {
         try {
@@ -217,6 +234,7 @@ $(document).ready(function () {
             result.data.forEach(item => {
                 const row = document.createElement('tr');
                 const btnLunas = item.status == "Y"  || role !== 'admin' ? '' : `<button class="lunasBtn" data-id="${item.id_hutang}">Lunas</button>`;
+                const btnDelete = item.status == "Y"  || role !== 'admin' ? '' : `<button class="deleteHutangBtn" data-id="${item.id_hutang}">Hapus</button>`;
                 row.innerHTML = `
                     <td>${item.id_hutang}</td>
                     <td>${item.created_at}</td>
@@ -227,7 +245,9 @@ $(document).ready(function () {
                         <button class="detailHutangBtn" data-id="${item.id_hutang}">Detail</button>
                         <button class="strukHutangBtn" data-id="${item.id_hutang}">Struk</button>
                         <button class="editHutangBtn" data-id="${item.id_hutang}">Edit</button>
-                        ${btnLunas}</td>
+                        ${btnLunas}
+                        ${btnDelete}
+                    </td>
                 `;
                 tbody.appendChild(row);
             });

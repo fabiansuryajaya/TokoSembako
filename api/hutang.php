@@ -11,7 +11,7 @@ switch ($method) {
         $id_hutang = isset($query_data['id_hutang']) ? (int)$query_data['id_hutang'] : 0;
         $from_date = isset($query_data['from_date']) ? $conn->real_escape_string($query_data['from_date']) : '';
         $to_date = isset($query_data['to_date']) ? $conn->real_escape_string($query_data['to_date']) : '';  
-       
+
         // data penjualan
         $sql = "SELECT p.id_penjualan as id_hutang, p.jumlah_penjualan as jumlah_hutang, p.total_pembayaran, p.total_ongkir, p.status, p.created_at, m.nama as nama_member, p.id_member, u.username as nama_user, u.id_user
                 FROM penjualan p
@@ -227,6 +227,34 @@ switch ($method) {
             echo json_encode(['error' => 'Gagal mengupdate status hutang']);
             exit;
         }
+        echo json_encode(['success' => true]);
+        break;
+    case 'DELETE':
+        // Hapus data hutang
+        $query_data = $_GET;
+        if (!isset($query_data['id_hutang'])) {
+            http_response_code(400);
+            echo json_encode(['error' => 'ID hutang tidak diberikan']);
+            exit;
+        }
+        $id_hutang = (int)$query_data['id_hutang'];
+
+        // Hapus detail penjualan terlebih dahulu
+        $sql = "DELETE FROM detail_penjualan WHERE id_penjualan = $id_hutang";
+        if ($conn->query($sql) === FALSE) {
+            http_response_code(500);
+            echo json_encode(['error' => 'Gagal menghapus detail penjualan']);
+            exit;
+        }
+
+        // Hapus penjualan
+        $sql = "DELETE FROM penjualan WHERE id_penjualan = $id_hutang";
+        if ($conn->query($sql) === FALSE) {
+            http_response_code(500);
+            echo json_encode(['error' => 'Gagal menghapus penjualan']);
+            exit;
+        }
+
         echo json_encode(['success' => true]);
         break;
     default:
