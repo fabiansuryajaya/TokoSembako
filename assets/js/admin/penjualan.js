@@ -1,5 +1,4 @@
 $(document).ready(function () {
-    
     const role = getRole();
     if (role !== 'admin') $('#editPriceBtn').hide();
 
@@ -9,6 +8,8 @@ $(document).ready(function () {
     edit_price       = false;
     start_date.value = new Date().toISOString().split('T')[0]; // Set to today
     to_date.value    = new Date().toISOString().split('T')[0]; // Set to today
+
+    const nomor_hp = '0818-395-768';
 
     const grand_total = document.getElementById('grand_total');
     const total_bayar = document.getElementById('total_bayar');
@@ -125,7 +126,7 @@ $(document).ready(function () {
                     </div>
                     <div style="text-align:center;font-size:15px;margin-bottom:1mm;">
                         Jl. Raya Mastrip No.31, Kedurus, Surabaya.<br>
-                        Telp/WA: 0851-1746-6153<br>
+                        Telp/WA: ${nomor_hp}<br>
                     </div>
                     <hr style="border:0;border-top:1px dashed #333;margin:2mm 0;">
                     <div style="font-size:16px;margin-bottom:1mm;text-align:left;">
@@ -367,7 +368,6 @@ $(document).ready(function () {
                     detailTableBody.innerHTML = ''; // Clear existing rows
                     detailModal.style.display = 'flex';
                     const params = { id_penjualan: idPenjualan, action: 'detail' };
-                
                     const queryParams = new URLSearchParams(params).toString();
 
                     // Fetch detail penjualan
@@ -605,7 +605,7 @@ $(document).ready(function () {
         const totalBayar = parseFloat(total_bayar.value) || 0;
         const grandTotal = parseFloat(grand_total.value.replace(/[Rp. ]+/g, "")) || 0;
         const kembalian = totalBayar - grandTotal;
-        
+
         total_kembalian.value = formatCurrencyIDR(kembalian);
     };
 

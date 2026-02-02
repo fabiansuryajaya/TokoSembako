@@ -13,6 +13,8 @@ $(document).ready(function () {
     start_date.value = new Date().toISOString().split('T')[0]; // Set to today
     to_date.value    = new Date().toISOString().split('T')[0]; // Set to today
 
+    const nomor_hp = '0818-395-768';
+
     const grand_total = document.getElementById('grand_total');
     const total_bayar = document.getElementById('total_bayar');
     const total_kembalian = document.getElementById('total_kembalian');
@@ -131,7 +133,7 @@ $(document).ready(function () {
                     </div>
                     <div style="text-align:center;font-size:15px;margin-bottom:1mm;">
                         Jl. Raya Mastrip No.31, Kedurus, Surabaya.<br>
-                        Telp/WA: 081-839-5768<br>
+                        Telp/WA: ${nomor_hp}<br>
                     </div>
                     <hr style="border:0;border-top:1px dashed #333;margin:2mm 0;">
                     <div style="font-size:16px;margin-bottom:1mm;text-align:left;">
@@ -143,6 +145,9 @@ $(document).ready(function () {
                     <table style="width:100%;font-size:16px;margin-bottom:2mm;text-align:center;margin-top:0px">
                         <tbody style="border:0;">
                             ${detail.map(item => `
+                                <tr>
+                                    <td rowspan="3" style="border:0;"><input type="checkbox" style="margin-right:5px;"></td>
+                                </tr>
                                 <tr>
                                     <td colspan="2" style="border:0;padding:0;padding-bottom:0.5mm;text-align:left;">
                                         <span style="font-weight:bold;">${item.nama_product}</span>
@@ -165,21 +170,33 @@ $(document).ready(function () {
                             <td style="border:0;font-weight:bold;padding-right:5mm;">Total:</td>
                             <td style="border:0;font-weight:bold;padding-right:5mm;">${formatCurrencyIDR(total_trx)}</td>
                         </tr>
+                        ${total_ongkir ? `}
+                            <tr>
+                                <td style="border:0;font-weight:bold;padding-right:5mm;">Ongkir:</td>
+                                <td style="border:0;font-weight:bold;padding-right:5mm;">${total_ongkir}</td>
+                            </tr>
+                        ` : ''}
+                        ${total_tagihan ? `}
+                            <tr>
+                                <td style="border:0;font-weight:bold;padding-right:5mm;">Grand Total:</td>
+                                <td style="border:0;font-weight:bold;padding-right:5mm;">${total_tagihan}</td>
+                            </tr>
+                        ` : ''}
+                        ${total_bayar ? `}
+                            <tr>
+                                <td style="border:0;font-weight:bold;padding-right:5mm;">Pembayaran:</td>
+                                <td style="border:0;font-weight:bold;padding-right:5mm;">${total_bayar}</td>
+                            </tr>
+                        ` : ''}
+                        ${total_kembalian ? `}
+                            <tr>
+                                <td style="border:0;font-weight:bold;padding-right:5mm;">Kembalian:</td>
+                                <td style="border:0;font-weight:bold;padding-right:5mm;">${total_kembalian}</td>
+                            </tr>
+                        ` : ''}
                         <tr>
-                            <td style="border:0;font-weight:bold;padding-right:5mm;">Ongkir:</td>
-                            <td style="border:0;font-weight:bold;padding-right:5mm;">${total_ongkir}</td>
-                        </tr>
-                        <tr>
-                            <td style="border:0;font-weight:bold;padding-right:5mm;">Grand Total:</td>
-                            <td style="border:0;font-weight:bold;padding-right:5mm;">${total_tagihan}</td>
-                        </tr>
-                        <tr>
-                            <td style="border:0;font-weight:bold;padding-right:5mm;">Pembayaran:</td>
-                            <td style="border:0;font-weight:bold;padding-right:5mm;">${total_bayar}</td>
-                        </tr>
-                        <tr>
-                            <td style="border:0;font-weight:bold;padding-right:5mm;">Kembalian:</td>
-                            <td style="border:0;font-weight:bold;padding-right:5mm;">${total_kembalian}</td>
+                            <td style="border:0;font-weight:bold;padding-right:5mm;">Status Bayar:</td>
+                            <td style="border:0;font-weight:bold;padding-right:5mm;">${trx.status == "Y" ? "Lunas" : "Belum Lunas"}</td>
                         </tr>
                     </table>
                     <div style="font-size:14px;text-align:center;margin-bottom:1mm;">
@@ -287,6 +304,11 @@ $(document).ready(function () {
                                     margin: 0mm;
                                     padding: 0;
                                     font-family:calibri;
+                                }
+
+                                checkbox {
+                                    transform: scale(1.2);
+                                    align-items: center;
                                 }
                             }
                         </style>

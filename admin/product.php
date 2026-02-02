@@ -58,7 +58,7 @@
 
                 <label for="harga_jual">Harga Jual:</label>
                 <input type="number" id="harga_jual" name="harga_jual" required>
-                
+
                 <label for="stok">Stok:</label>
                 <input type="number" id="stok" name="stok" required>
 
@@ -74,7 +74,7 @@
 
                 <button type="button" id="closeModalBtn">Batal</button>
                 <button type="submit">Simpan</button>
-               
+
             </form>
         </div>
     </div>
@@ -229,6 +229,42 @@
             }
         }
 
+        // export_btn onclick
+        document.getElementById('export_btn').addEventListener('click', async () =>
+        {
+            try {
+                const status = document.getElementById('status').checked ? 'Y' : 'N';
+                let url = '../api/product.php?status=' + status;
+                const result = await callAPI({ url, method: 'GET' });
+                const data = result.data;
+
+                // Buat workbook dan worksheet
+                const wb = XLSX.utils.book_new();
+                const ws_data = [
+                    ['ID', 'Nama Barang', 'Nama Supplier', 'Nama Satuan', 'Modal', 'Harga Jual']
+                ];
+
+                data.forEach(product => {
+                    ws_data.push([
+                        product.id_product,
+                        product.nama_product,
+                        product.nama_supplier,
+                        product.nama_satuan,
+                        product.harga_beli_product,
+                        product.harga_jual_product
+                    ]);
+                });
+
+                const ws = XLSX.utils.aoa_to_sheet(ws_data);
+                XLSX.utils.book_append_sheet(wb, ws, 'Products');
+
+                // Simpan file Excel
+                XLSX.writeFile(wb, 'products_export.xlsx');
+            } catch (error) {
+                console.error('Gagal mengekspor data:', error);
+            }
+        });
+
         // save_btn onclick
         document.getElementById('save_btn').addEventListener('click', async () => {
             const changes = window.products_change;
@@ -303,7 +339,7 @@
                                         ${product.status === 'Y' ? 'Aktif' : 'Tidak Aktif'}
                                     </span></span>
                                 </div>
-                                
+
                                 <div style="margin-bottom: 10px;">
                                     <span style="font-weight:bold; width:140px; display:inline-block; vertical-align:top;">Deskripsi</span>
                                     <span>: <div style="background:#f8f9fa; border-radius:5px; padding:8px; margin-top:2px; display:inline-block;">
@@ -403,7 +439,7 @@
                 await callAPI({ url: `../api/product.php?id=${id}`, method: 'DELETE' });
                 getData();
             } catch (error) {
-                
+
             }
         }
 
@@ -426,7 +462,7 @@
                 console.error('Gagal memuat pemasok:', error);
             }
         }
-        fetchSuppliers();   
+        fetchSuppliers();
 
         async function fetchSatuan() {
             try {
