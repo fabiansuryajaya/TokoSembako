@@ -139,6 +139,9 @@ $(document).ready(function () {
                         <tbody style="border:0;">
                             ${detail.map(item => `
                                 <tr>
+                                    <td rowspan="3" style="border:0;"><input type="checkbox" style="margin-right:5px;"></td>
+                                </tr>
+                                <tr>
                                     <td colspan="2" style="border:0;padding:0;padding-bottom:0.5mm;text-align:left;">
                                         <span style="font-weight:bold;">${item.nama_product}</span>
                                     </td>
@@ -338,6 +341,12 @@ $(document).ready(function () {
                                     margin: 0mm;
                                     padding: 0;
                                     font-family:calibri;
+                                }
+
+                                checkbox {
+                                    transform: scale(1.2);
+                                    align-items: center;
+                                    font-weight: bold;
                                 }
                             }
                         </style>

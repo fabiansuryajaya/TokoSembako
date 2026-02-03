@@ -170,25 +170,25 @@ $(document).ready(function () {
                             <td style="border:0;font-weight:bold;padding-right:5mm;">Total:</td>
                             <td style="border:0;font-weight:bold;padding-right:5mm;">${formatCurrencyIDR(total_trx)}</td>
                         </tr>
-                        ${total_ongkir ? `}
+                        ${total_ongkir ? `
                             <tr>
                                 <td style="border:0;font-weight:bold;padding-right:5mm;">Ongkir:</td>
                                 <td style="border:0;font-weight:bold;padding-right:5mm;">${total_ongkir}</td>
                             </tr>
                         ` : ''}
-                        ${total_tagihan ? `}
+                        ${total_tagihan ? `
                             <tr>
                                 <td style="border:0;font-weight:bold;padding-right:5mm;">Grand Total:</td>
                                 <td style="border:0;font-weight:bold;padding-right:5mm;">${total_tagihan}</td>
                             </tr>
                         ` : ''}
-                        ${total_bayar ? `}
+                        ${total_bayar ? `
                             <tr>
                                 <td style="border:0;font-weight:bold;padding-right:5mm;">Pembayaran:</td>
                                 <td style="border:0;font-weight:bold;padding-right:5mm;">${total_bayar}</td>
                             </tr>
                         ` : ''}
-                        ${total_kembalian ? `}
+                        ${total_kembalian ? `
                             <tr>
                                 <td style="border:0;font-weight:bold;padding-right:5mm;">Kembalian:</td>
                                 <td style="border:0;font-weight:bold;padding-right:5mm;">${total_kembalian}</td>
@@ -309,6 +309,7 @@ $(document).ready(function () {
                                 checkbox {
                                     transform: scale(1.2);
                                     align-items: center;
+                                    font-weight: bold;
                                 }
                             }
                         </style>
