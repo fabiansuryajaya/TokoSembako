@@ -120,12 +120,12 @@ $(document).ready(function () {
                 const trx = result.data;
                 const detail = trx.detail || [];
 
-                const total_trx = detail.reduce((a,b)=>a+b.jumlah_hutang*b.harga_hutang,0);
+                const total_trx = detail.reduce((a,b)=>a+b.jumlah_hutang*b.harga_hutang,0) + (1 * (trx.total_ongkir ?? 0));
 
                 const total_ongkir    = (trx.total_ongkir     != 0) ? formatCurrencyIDR(trx.total_ongkir)                 : "";
-                const total_bayar     = (trx.total_pembayaran != 0) ? formatCurrencyIDR(trx.total_pembayaran)             : "";
-                const total_kembalian = (trx.total_pembayaran != 0) ? formatCurrencyIDR(trx.total_pembayaran - trx.total_ongkir - total_trx) : "";
-                const total_tagihan   = (trx.total_pembayaran != 0) ? formatCurrencyIDR((1 * total_trx) + (1 * trx.total_ongkir)) : "";
+                // const total_bayar     = (trx.total_pembayaran != 0) ? formatCurrencyIDR(trx.total_pembayaran)             : "";
+                // const total_kembalian = (trx.total_pembayaran != 0) ? formatCurrencyIDR(trx.total_pembayaran - trx.total_ongkir - total_trx) : "";
+                // const total_tagihan   = (trx.total_pembayaran != 0) ? formatCurrencyIDR((1 * total_trx) + (1 * trx.total_ongkir)) : "";
 
                 let html = `
                     <div style="text-align:center;font-weight:bold;font-size:15px;letter-spacing:1px;margin-bottom:2mm;">
@@ -166,34 +166,16 @@ $(document).ready(function () {
                     </table>
                     <hr style="border:0;border-top:2px dashed #333;margin:2mm 0;">
                     <table style="width:100%;font-size:16px;margin-bottom:2mm;text-align:right;">
-                        <tr>
-                            <td style="border:0;font-weight:bold;padding-right:5mm;">Total:</td>
-                            <td style="border:0;font-weight:bold;padding-right:5mm;">${formatCurrencyIDR(total_trx)}</td>
-                        </tr>
                         ${total_ongkir ? `
                             <tr>
                                 <td style="border:0;font-weight:bold;padding-right:5mm;">Ongkir:</td>
                                 <td style="border:0;font-weight:bold;padding-right:5mm;">${total_ongkir}</td>
                             </tr>
                         ` : ''}
-                        ${total_tagihan ? `
-                            <tr>
-                                <td style="border:0;font-weight:bold;padding-right:5mm;">Grand Total:</td>
-                                <td style="border:0;font-weight:bold;padding-right:5mm;">${total_tagihan}</td>
-                            </tr>
-                        ` : ''}
-                        ${total_bayar ? `
-                            <tr>
-                                <td style="border:0;font-weight:bold;padding-right:5mm;">Pembayaran:</td>
-                                <td style="border:0;font-weight:bold;padding-right:5mm;">${total_bayar}</td>
-                            </tr>
-                        ` : ''}
-                        ${total_kembalian ? `
-                            <tr>
-                                <td style="border:0;font-weight:bold;padding-right:5mm;">Kembalian:</td>
-                                <td style="border:0;font-weight:bold;padding-right:5mm;">${total_kembalian}</td>
-                            </tr>
-                        ` : ''}
+                        <tr>
+                            <td style="border:0;font-weight:bold;padding-right:5mm;">Total:</td>
+                            <td style="border:0;font-weight:bold;padding-right:5mm;">${formatCurrencyIDR(total_trx)}</td>
+                        </tr>
                         <tr>
                             <td style="border:0;font-weight:bold;padding-right:5mm;">Status Bayar:</td>
                             <td style="border:0;font-weight:bold;padding-right:5mm;">${trx.status == "Y" ? "Lunas" : "Belum Lunas"}</td>
