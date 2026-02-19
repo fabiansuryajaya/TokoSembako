@@ -10,7 +10,7 @@ switch ($method) {
         $action = isset($query_data['action']) ? $query_data['action'] : '';
         $id_hutang = isset($query_data['id_hutang']) ? (int)$query_data['id_hutang'] : 0;
         $from_date = isset($query_data['from_date']) ? $conn->real_escape_string($query_data['from_date']) : '';
-        $to_date = isset($query_data['to_date']) ? $conn->real_escape_string($query_data['to_date']) : '';  
+        $to_date = isset($query_data['to_date']) ? $conn->real_escape_string($query_data['to_date']) : '';
 
         // data penjualan
         $sql = "SELECT p.id_penjualan as id_hutang, p.jumlah_penjualan as jumlah_hutang, p.total_pembayaran, p.total_ongkir, p.status, p.created_at, m.nama as nama_member, p.id_member, u.username as nama_user, u.id_user
@@ -48,7 +48,7 @@ switch ($method) {
                         JOIN penjualan pe ON dp.id_penjualan = pe.id_penjualan
                         WHERE dp.id_penjualan = $id_hutang
                         ORDER BY p.nama_product asc";
-                        
+
                 $result = $conn->query($sql);
                 if (!$result) {
                     http_response_code(500);
@@ -106,7 +106,7 @@ switch ($method) {
         }
         $id_penjualan = $conn->insert_id; // Ambil ID penjualan yang baru saja dimasukkan
 
-        for ($i=0; $i < count($stock); $i++) { 
+        for ($i=0; $i < count($stock); $i++) {
             $item = $stock[$i];
             $id_produk = (int)$item['product_id'];
             $jumlah = (int)$item['quantity'];
@@ -173,7 +173,7 @@ switch ($method) {
                 exit;
             }
 
-            for ($i=0; $i < count($stock); $i++) { 
+            for ($i=0; $i < count($stock); $i++) {
                 $item = $stock[$i];
                 $id_produk = (int)$item['product_id'];
                 $jumlah = (int)$item['quantity'];
@@ -199,7 +199,8 @@ switch ($method) {
                 return $carry + ((int)$item['harga_beli'] * (int)$item['quantity']);
             }, 0);
             $total_bayar  = isset($data['total_bayar'])  ? (float)$data['total_bayar'] : 0;
-            $sql = "UPDATE penjualan SET jumlah_penjualan = $jumlah_penjualan, total_pembayaran = $total_bayar, created_by = $id_user, id_member = $id_member WHERE id_penjualan = $id_hutang";
+            $total_ongkir  = isset($data['total_ongkir'])  ? (float)$data['total_ongkir'] : 0;
+            $sql = "UPDATE penjualan SET jumlah_penjualan = $jumlah_penjualan, total_pembayaran = $total_bayar, created_by = $id_user, id_member = $id_member, total_ongkir = $total_ongkirno  WHERE id_penjualan = $id_hutang";
             if ($conn->query($sql) === FALSE) {
                 http_response_code(500);
                 echo json_encode(['error' => 'Gagal mengupdate penjualan']);
