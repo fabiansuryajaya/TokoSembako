@@ -45,8 +45,7 @@ switch ($method) {
                         JOIN product p ON dp.id_produk = p.id_product
                         JOIN satuan s ON p.id_satuan = s.id_satuan
                         JOIN supplier su ON p.id_supplier = su.id_supplier
-                        WHERE dp.id_penjualan = $id_penjualan
-                        ORDER BY p.nama_product asc";
+                        WHERE dp.id_penjualan = $id_penjualan";
             } else {
                 http_response_code(400);
                 echo json_encode(['error' => 'ID penjualan tidak diberikan']);
@@ -98,7 +97,7 @@ switch ($method) {
         }
         $id_penjualan = $conn->insert_id; // Ambil ID penjualan yang baru saja dimasukkan
 
-        for ($i=0; $i < count($stock); $i++) { 
+        for ($i=0; $i < count($stock); $i++) {
             $item = $stock[$i];
             $id_produk = (int)$item['product_id'];
             $jumlah = (int)$item['quantity'];
@@ -148,7 +147,7 @@ switch ($method) {
         }
 
         // Masukkan detail penjualan yang baru
-        for ($i=0; $i < count($stock); $i++) { 
+        for ($i=0; $i < count($stock); $i++) {
             $item = $stock[$i];
             $id_produk = (int)$item['product_id'];
             $jumlah = (int)$item['quantity'];
