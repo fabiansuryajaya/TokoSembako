@@ -215,7 +215,7 @@ $(document).ready(function () {
                                 <td><input type="number" class="quantity" value="${detail.jumlah_penjualan}" min="1"></td>
                                 <td class="total">${formatCurrencyIDR(detail.harga_penjualan * detail.jumlah_penjualan)}</td>
                             `;
-                            table.appendChild(detailRow);
+                            table.insertBefore(detailRow, table.firstChild);
                         });
                         document.getElementById('user_id').value = (result.data.id_user);
                         document.getElementById('user_id').dispatchEvent(new Event('change')); // Trigger change event for Select2

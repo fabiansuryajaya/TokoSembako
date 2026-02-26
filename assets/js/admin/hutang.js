@@ -414,7 +414,7 @@ $(document).ready(function () {
                                         <td><input type="number" class="quantity" value="${detail.jumlah_hutang}" min="1"></td>
                                         <td class="total">${formatCurrencyIDR(detail.harga_hutang * detail.jumlah_hutang)}</td>
                                     `;
-                                    table.appendChild(detailRow);
+                                    table.insertBefore(detailRow, table.firstChild);
                                 });
 
                                 document.getElementById('total_bayar').value  = (result.data.total_pembayaran);
