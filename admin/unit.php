@@ -25,7 +25,7 @@
                 <input type="text" id="unit_name" name="name" required>
                 <button type="button" id="closeModalBtn">Batal</button>
                 <button type="submit">Simpan</button>
-                
+
             </form>
         </div>
     </div>
@@ -78,6 +78,20 @@ function addTableEventListeners() {
         btn.addEventListener('click', async function () {
             const id = this.getAttribute('data-id');
             await getEditData(id);
+        });
+    });
+    //delete-btn
+    document.querySelectorAll('.delete-btn').forEach(btn => {
+        btn.addEventListener('click', async function () {
+            const id = this.getAttribute('data-id');
+            if (confirm('Apakah Anda yakin ingin menghapus satuan ini?')) {
+                try {
+                    await callAPI({ url: `../api/unit.php?id=${id}`, method: 'DELETE' });
+                    fetchUnit();
+                } catch (error) {
+                    console.error('Gagal menghapus unit:', error);
+                }
+            }
         });
     });
     // Tambahkan event listener untuk tombol hapus jika diperlukan
