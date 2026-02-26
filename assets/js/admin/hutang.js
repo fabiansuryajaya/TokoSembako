@@ -583,7 +583,7 @@ $(document).ready(function () {
 
         let method = 'POST';
         const edit_penjualan_id = document.getElementById('edit_penjualan_id').value;
-        if (edit_penjualan_id) {
+        if (edit_penjualan_id != '') {
             body.id_hutang = edit_penjualan_id;
             body.action = 'edit';
             method = 'PUT';
@@ -623,6 +623,9 @@ $(document).ready(function () {
 
         document.getElementById('total_bayar').value = '';
         document.getElementById('harga_ongkir').value = '';
+
+        document.getElementById('edit_penjualan_id').value = '';
+
         table.innerHTML = '';
         updateGrandTotal(); // Update grand total after adding a new product
     });
