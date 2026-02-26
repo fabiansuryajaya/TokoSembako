@@ -133,7 +133,7 @@ switch ($method) {
     case 'PUT':
         // Tambah product baru
         $data = json_decode(file_get_contents('php://input'), true);
-        if ($data['action'] == 'edit') {
+        if (isset($data['action']) && $data['action'] == 'edit') {
             $stock = $data['hutang'];
 
             if (!is_array($stock) || empty($stock)) {
@@ -210,7 +210,6 @@ switch ($method) {
             echo json_encode(['success' => true]);
             break;
         }
-
 
         // Update status hutang menjadi lunas
         $query_data = $_GET;
