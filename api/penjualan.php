@@ -45,7 +45,8 @@ switch ($method) {
                         JOIN product p ON dp.id_produk = p.id_product
                         JOIN satuan s ON p.id_satuan = s.id_satuan
                         JOIN supplier su ON p.id_supplier = su.id_supplier
-                        WHERE dp.id_penjualan = $id_penjualan";
+                        WHERE dp.id_penjualan = $id_penjualan
+                        ORDER BY dp.id_detail_penjualan desc";
             } else {
                 http_response_code(400);
                 echo json_encode(['error' => 'ID penjualan tidak diberikan']);
