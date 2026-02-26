@@ -235,31 +235,6 @@ $(document).ready(function () {
         }
     });
 
-    // deleteBtn
-    document.addEventListener('click', async function(e) {
-        if (e.target.classList.contains('deleteBtn')) {
-            const idHutang = e.target.getAttribute('data-id');
-            if (confirm('Apakah Anda yakin ingin menghapus data ini?')) {
-                try {
-                    const result = await callAPI({
-                        url: `../api/hutang.php?id_hutang=${idHutang}`,
-                        method: 'DELETE'
-                    });
-                    if (result.status !== 0) {
-                        alert(result.message);
-                        return;
-                    }
-
-                    alert('Data hutang berhasil dihapus!');
-                    fetchPenjualan(); // Refresh the penjualan data
-                }
-                catch (error) {
-                    console.error('Gagal menghapus data hutang:', error);
-                }
-            }
-        }
-    });
-
     // get data penjualan
     async function fetchPenjualan() {
         try {
@@ -277,7 +252,7 @@ $(document).ready(function () {
             result.data.forEach(item => {
                 const row = document.createElement('tr');
 
-                const btnDelete = role !== 'admin' ? '' : `<button class="deleteBtn" data-id="${item.id_penjualan}">Hapus</button>`;
+                const btnDelete = role !== 'admin' ? '' : `<button class="deleteBtn" onclick="deletePenjualan(${item.id_penjualan})">Hapus</button>`;
 
                 row.innerHTML = `
                     <td>${item.id_penjualan}</td>
@@ -654,3 +629,24 @@ $(document).ready(function () {
         }
     });
 });
+
+async function deletePenjualan(idHutang) {
+    if (confirm('Apakah Anda yakin ingin menghapus data ini?')) {
+        try {
+            const result = await callAPI({
+                url: `../api/hutang.php?id_hutang=${idHutang}`,
+                method: 'DELETE'
+            });
+            if (result.status !== 0) {
+                alert(result.message);
+                return;
+            }
+
+            alert('Data hutang berhasil dihapus!');
+            fetchPenjualan(); // Refresh the penjualan data
+        }
+        catch (error) {
+            console.error('Gagal menghapus data hutang:', error);
+        }
+    }
+}

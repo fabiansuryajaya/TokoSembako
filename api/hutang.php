@@ -84,6 +84,7 @@ switch ($method) {
 
         // insert penjualan
         $id_user = (int)$data['kasir_id'];
+        if ($id_user == 0) $id_user = 1;
         if (isset($data['id_member'])) {
             $id_member = (int)$data['id_member'];
         } else {
