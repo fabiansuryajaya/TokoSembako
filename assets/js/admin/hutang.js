@@ -25,7 +25,7 @@ $(document).ready(function () {
     const product_list = {};
     async function fetchProduct() {
         try {
-            const result = await callAPI({ url: '../api/product.php', method: 'GET' });
+            const result = await callAPI({ url: '../api/product.php', body: { method: 'read' } });
             const productSelect = document.getElementById('product_id');;
             productSelect.innerHTML = '<option value="">Pilih Barang</option>';
 
@@ -52,7 +52,7 @@ $(document).ready(function () {
 
     async function fetchUsersPegawai() {
         try {
-            const result = await callAPI({ url: '../api/user.php', method: 'GET' });
+            const result = await callAPI({ url: '../api/user.php', body: { method: 'read' } });
             const userSelect = document.getElementById('user_id');
             userSelect.innerHTML = '<option value="">Pilih User</option>';
             result.data.data.forEach(user => {
@@ -82,7 +82,7 @@ $(document).ready(function () {
     const member_list = {};
     async function fetchMember() {
         try {
-            const result = await callAPI({ url: '../api/member.php', method: 'GET' });
+            const result = await callAPI({ url: '../api/member.php', body: { method: 'read' } });
             const memberSelect = document.getElementById('member_id');
             memberSelect.innerHTML = '<option value="">Pilih Member</option>';
 
@@ -116,7 +116,7 @@ $(document).ready(function () {
 
             // Ambil detail penjualan
             try {
-                const result = await callAPI({ url: `../api/hutang.php?id_hutang=${idPenjualan}&action=detail`, method: 'GET' });
+                const result = await callAPI({ url: '../api/hutang.php', body: { method: 'read', id_hutang: idPenjualan, action: 'detail' } });
                 const trx = result.data;
                 const detail = trx.detail || [];
 
@@ -223,7 +223,7 @@ $(document).ready(function () {
             const idHutang = e.target.getAttribute('data-id');
             if (confirm('Apakah Anda yakin ingin menghapus data hutang ini?')) {
                 try {
-                    const result = await callAPI({ url: `../api/hutang.php?id_hutang=${idHutang}`, method: 'DELETE' });
+                    const result = await callAPI({ url: '../api/hutang.php', body: { method: 'delete', id_hutang: idHutang } });
                     alert(result.message);
                     fetchHutang(); // Refresh the hutang data
                 }
@@ -237,14 +237,13 @@ $(document).ready(function () {
     // get data hutang
     async function fetchHutang() {
         try {
-            const params = {};
+            const body = { method: 'read' };
             const start_date = document.getElementById('from_date').value;
             const to_date = document.getElementById('to_date').value;
-            if (start_date) params.from_date = start_date;
-            if (to_date) params.to_date = to_date;
-            const queryParams = new URLSearchParams(params).toString();
+            if (start_date) body.from_date = start_date;
+            if (to_date) body.to_date = to_date;
 
-            const result = await callAPI({ url: '../api/hutang.php?' + queryParams, method: 'GET' });
+            const result = await callAPI({ url: '../api/hutang.php', body });
             const tbody = document.querySelector('table tbody');
             tbody.innerHTML = ''; // Clear existing rows
 
@@ -336,7 +335,7 @@ $(document).ready(function () {
                     detailTableBody.innerHTML = ''; // Clear existing rows
                     detailModal.style.display = 'flex';
 
-                    callAPI({ url: `../api/hutang.php?id_hutang=${idHutang}&action=detail`, method: 'GET' })
+                    callAPI({ url: '../api/hutang.php', body: { method: 'read', id_hutang: idHutang, action: 'detail' } })
                         .then(result => {
                             const data = result.data;
                             const detailData = data.detail;
@@ -371,7 +370,7 @@ $(document).ready(function () {
                 button.addEventListener('click', function () {
                     const idHutang = this.getAttribute('data-id');
                     if (confirm('Apakah Anda yakin ingin menandai hutang ini sebagai lunas?')) {
-                        callAPI({ url: `../api/hutang.php?id_hutang=${idHutang}`, method: 'PUT' })
+                        callAPI({ url: '../api/hutang.php', body: { method: 'update', id_hutang: idHutang } })
                             .then(result => {
                                 alert(result.message);
                                 fetchHutang(); // Refresh the hutang data
@@ -392,9 +391,7 @@ $(document).ready(function () {
                     table.innerHTML = '';
                     try {
                         // Fetch detail hutang
-                        const params = { id_hutang: idHutang, action: 'detail' };
-                        const queryParams = new URLSearchParams(params).toString();
-                        callAPI({ url: `../api/hutang.php?${queryParams}`, method: 'GET' })
+                        callAPI({ url: '../api/hutang.php', body: { method: 'read', id_hutang: idHutang, action: 'detail' } })
                             .then(result => {
                                 const detailData = result.data.detail;
                                 // show in trx table
@@ -467,7 +464,7 @@ $(document).ready(function () {
         detailModal.style.display = 'none';
 
         if (confirm('Apakah Anda yakin ingin membatalkan pelunasan hutang ini?')) {
-            callAPI({ url: `../api/hutang.php?id_hutang=${id_hutang_modal}&status=N`, method: 'PUT' })
+            callAPI({ url: '../api/hutang.php', body: { method: 'update', id_hutang: id_hutang_modal, status: 'N' } })
                 .then(result => {
                     alert(result.message);
                     fetchHutang(); // Refresh the hutang data
@@ -589,10 +586,11 @@ $(document).ready(function () {
             method = 'PUT';
         }
 
+        body.method = method === 'POST' ? 'create' : 'update';
+
         try {
             const result = await callAPI({
                 url: '../api/hutang.php',
-                method: method,
                 body
             });
             if (result.status !== 0) {

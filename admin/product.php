@@ -186,8 +186,7 @@
         async function getData() {
             try {
                 const status = document.getElementById('status').checked ? 'Y' : 'N';
-                let url = '../api/product.php?status=' + status;
-                const result = await callAPI({ url, method: 'GET' });
+                const result = await callAPI({ url: '../api/product.php', body: { method: 'read', status } });
                 productTable.innerHTML = '';
                 result.data.forEach(product => {
                     const tr = document.createElement('tr');
@@ -234,8 +233,7 @@
         {
             try {
                 const status = document.getElementById('status').checked ? 'Y' : 'N';
-                let url = '../api/product.php?status=' + status;
-                const result = await callAPI({ url, method: 'GET' });
+                const result = await callAPI({ url: '../api/product.php', body: { method: 'read', status } });
                 const data = result.data;
 
                 // Buat workbook dan worksheet
@@ -269,8 +267,8 @@
         document.getElementById('save_btn').addEventListener('click', async () => {
             const changes = window.products_change;
             const updatePromises = Object.keys(changes).map(async (id) => {
-                const body = { id, ...changes[id] };
-                return await callAPI({ url: '../api/product.php', method: 'PUT', body });
+                const body = { method: 'update', id, ...changes[id] };
+                return await callAPI({ url: '../api/product.php', body });
             });
             await Promise.all(updatePromises);
 
@@ -297,7 +295,7 @@
             document.querySelectorAll('.detail-btn').forEach(btn => {
                 btn.addEventListener('click', async function () {
                     const id = this.getAttribute('data-id');
-                    const result = await callAPI({ url: `../api/product.php?id_product=${id}&status=ALL`, method: 'GET' });
+                    const result = await callAPI({ url: '../api/product.php', body: { method: 'read', id_product: parseInt(id), status: 'ALL' } });
                     if (result.data.length > 0) {
                         const product = result.data[0];
                         document.getElementById('detailContent').innerHTML = `
@@ -373,8 +371,8 @@
 
         async function submitProduct() {
             try {
-                const method = action === "create" ? 'POST' : 'PUT';
                 const body = {
+                    method: action === "create" ? 'create' : 'update',
                     nama: document.getElementById('product_name').value,
                     supplier_id: document.getElementById('supplier_id').value,
                     satuan_id: document.getElementById('satuan_id').value,
@@ -387,7 +385,7 @@
                 if (action === "edit" && editProductId) {
                     body.id = editProductId;
                 }
-                const result = await callAPI({ url: '../api/product.php', method, body });
+                const result = await callAPI({ url: '../api/product.php', body });
                 if (result.status !== 0) {
                     alert(result.message);
                     return;
@@ -408,7 +406,7 @@
 
         async function getEditData(id) {
             try {
-                const result = await callAPI({ url: `../api/product.php?id_product=${id}&status=ALL`, method: 'GET' });
+                const result = await callAPI({ url: '../api/product.php', body: { method: 'read', id_product: parseInt(id), status: 'ALL' } });
                 if (result.data.length > 0) {
                     openModal("edit", id);
                     document.getElementById('product_name').value = result.data[0].nama_product;
@@ -436,7 +434,7 @@
 
         async function deleteData(id) {
             try {
-                await callAPI({ url: `../api/product.php?id=${id}`, method: 'DELETE' });
+                await callAPI({ url: '../api/product.php', body: { method: 'delete', id: parseInt(id) } });
                 getData();
             } catch (error) {
 
@@ -445,7 +443,7 @@
 
         async function fetchSuppliers() {
             try {
-                const result = await callAPI({ url: '../api/supplier.php', method: 'GET' });
+                const result = await callAPI({ url: '../api/supplier.php', body: { method: 'read' } });
                 const supplierSelect = document.getElementById('supplier_id');
                 supplierSelect.innerHTML = '<option value="">Pilih Supplier</option>';
                 result.data.forEach(supplier => {
@@ -466,7 +464,7 @@
 
         async function fetchSatuan() {
             try {
-                const result = await callAPI({ url: '../api/unit.php', method: 'GET' });
+                const result = await callAPI({ url: '../api/unit.php', body: { method: 'read' } });
                 const satuanSelect = document.getElementById('satuan_id');
                 satuanSelect.innerHTML = '<option value="">Pilih Satuan</option>';
                 result.data.forEach(satuan => {

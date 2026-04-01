@@ -18,7 +18,7 @@ $(document).ready(function () {
     const product_list = {};
     async function fetchProduct() {
         try {
-            const result = await callAPI({ url: '../api/product.php', method: 'GET' });
+            const result = await callAPI({ url: '../api/product.php', body: { method: 'read' } });
             const productSelect = document.getElementById('product_id');;
             productSelect.innerHTML = '<option value="">Pilih Barang</option>';
 
@@ -55,7 +55,7 @@ $(document).ready(function () {
 
             // Ambil detail penjualan
             try {
-                const result = await callAPI({ url: `../api/penjualan.php?id_penjualan=${idPenjualan}&action=detail`, method: 'GET' });
+                const result = await callAPI({ url: '../api/penjualan.php', body: { method: 'read', id_penjualan: idPenjualan, action: 'detail' } });
                 const trx = result.data;
                 const detail = trx.detail || [];
 
@@ -193,9 +193,7 @@ $(document).ready(function () {
             table.innerHTML = '';
             try {
                 // Fetch detail penjualan
-                const params = { id_penjualan: idPenjualan, action: 'detail' };
-                const queryParams = new URLSearchParams(params).toString();
-                callAPI({ url: `../api/penjualan.php?${queryParams}`, method: 'GET' })
+                callAPI({ url: '../api/penjualan.php', body: { method: 'read', id_penjualan: idPenjualan, action: 'detail' } })
                     .then(result => {
                         const detailData = result.data.detail;
                         // show in trx table
@@ -242,8 +240,8 @@ $(document).ready(function () {
             if (confirm('Apakah Anda yakin ingin menghapus data ini?')) {
                 try {
                     const result = await callAPI({
-                        url: `../api/hutang.php?id_hutang=${idHutang}`,
-                        method: 'DELETE'
+                        url: '../api/hutang.php',
+                        body: { method: 'delete', id_hutang: idHutang }
                     });
                     if (result.status !== 0) {
                         alert(result.message);
@@ -263,14 +261,13 @@ $(document).ready(function () {
     // get data penjualan
     async function fetchPenjualan() {
         try {
-            const params = {};
+            const body = { method: 'read' };
             const start_date = document.getElementById('from_date').value;
             const to_date = document.getElementById('to_date').value;
-            if (start_date) params.from_date = start_date;
-            if (to_date) params.to_date = to_date;
-            const queryParams = new URLSearchParams(params).toString();
+            if (start_date) body.from_date = start_date;
+            if (to_date) body.to_date = to_date;
 
-            const result = await callAPI({ url: '../api/penjualan.php?' + queryParams, method: 'GET' });
+            const result = await callAPI({ url: '../api/penjualan.php', body });
             const tbody = document.querySelector('table tbody');
             tbody.innerHTML = ''; // Clear existing rows
 
@@ -376,11 +373,9 @@ $(document).ready(function () {
 
                     detailTableBody.innerHTML = ''; // Clear existing rows
                     detailModal.style.display = 'flex';
-                    const params = { id_penjualan: idPenjualan, action: 'detail' };
-                    const queryParams = new URLSearchParams(params).toString();
 
                     // Fetch detail penjualan
-                    callAPI({ url: `../api/penjualan.php?${queryParams}`, method: 'GET' })
+                    callAPI({ url: '../api/penjualan.php', body: { method: 'read', id_penjualan: idPenjualan, action: 'detail' } })
                         .then(result => {
                             const detailData = result.data.detail;
                             detailData.forEach(detail => {
@@ -409,7 +404,7 @@ $(document).ready(function () {
 
     async function fetchUsersPegawai() {
         try {
-            const result = await callAPI({ url: '../api/user.php', method: 'GET' });
+            const result = await callAPI({ url: '../api/user.php', body: { method: 'read' } });
             const userSelect = document.getElementById('user_id');
             userSelect.innerHTML = '<option value="">Pilih User</option>';
             result.data.data.forEach(user => {
@@ -558,10 +553,11 @@ $(document).ready(function () {
         let method = 'POST';
         if (edit_penjualan_id != '') method = 'PUT';
 
+        body.method = method === 'POST' ? 'create' : 'update';
+
         try {
             const result = await callAPI({
                 url: '../api/penjualan.php',
-                method,
                 body
             });
             if (result.status !== 0) {

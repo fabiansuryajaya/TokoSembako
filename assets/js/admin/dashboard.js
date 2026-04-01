@@ -19,11 +19,14 @@ document.addEventListener('DOMContentLoaded', () => {
             "Member" : "member"
         },
         "Transaksi" : {
-            "Restock" : "restock",
+            "Report" : "report",
             "Penjualan" : "penjualan",
             "Hutang" : "hutang"
         },
-        "Report" : "report",
+        "Restock" : {
+            "Restock" : "restock",
+            "Report"  : "restock_report"
+        },
         "Database" : "database",
         "Setting" : "setting",
         "Logout" : "logout"
@@ -134,8 +137,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (page == "logout"){
             callAPI({
                 url: '../api/auth.php',
-                body: { logout: '1' },
-                method: 'POST'
+                body: { method: 'create', logout: '1' }
             }).then(response => {
                 window.location.href = '../index.php';
             });

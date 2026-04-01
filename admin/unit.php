@@ -53,7 +53,7 @@ const unitTable = document.querySelector('.unit-page tbody');
 
 async function fetchUnit() {
     try {
-        const result = await callAPI({ url: '../api/unit.php', method: 'GET' });
+        const result = await callAPI({ url: '../api/unit.php', body: { method: 'read' } });
         unitTable.innerHTML = '';
         result.data.forEach(unit => {
             const tr = document.createElement('tr');
@@ -86,7 +86,7 @@ function addTableEventListeners() {
             const id = this.getAttribute('data-id');
             if (confirm('Apakah Anda yakin ingin menghapus satuan ini?')) {
                 try {
-                    await callAPI({ url: `../api/unit.php?id=${id}`, method: 'DELETE' });
+                    await callAPI({ url: '../api/unit.php', body: { method: 'delete', id: parseInt(id) } });
                     fetchUnit();
                 } catch (error) {
                     console.error('Gagal menghapus unit:', error);
@@ -101,14 +101,14 @@ fetchUnit();
 
 async function submitUnit() {
     try {
-        const method = action === "create" ? 'POST' : 'PUT';
         const body = {
+            method: action === "create" ? 'create' : 'update',
             nama: document.getElementById('unit_name').value
         };
         if (action === "edit" && editUnitId) {
             body.id = editUnitId;
         }
-        await callAPI({ url: '../api/unit.php', method, body });
+        await callAPI({ url: '../api/unit.php', body });
         fetchUnit();
     } catch (error) {
         console.error('Gagal menyimpan unit:', error);
@@ -125,7 +125,7 @@ document.getElementById('createUnitForm').addEventListener('submit', async (e) =
 
 async function getEditData(id) {
     try {
-        const result = await callAPI({ url: `../api/unit.php?id=${id}`, method: 'GET' });
+        const result = await callAPI({ url: '../api/unit.php', body: { method: 'read', id: parseInt(id) } });
         if (result.data.length > 0) {
             openModal("edit", id);
             document.getElementById('unit_name').value = result.data[0].nama;

@@ -56,7 +56,7 @@ const supplierTable = document.querySelector('.supplier-page tbody');
 
 async function fetchSupplier() {
     try {
-        const result = await callAPI({ url: '../api/supplier.php', method: 'GET' });
+        const result = await callAPI({ url: '../api/supplier.php', body: { method: 'read' } });
         supplierTable.innerHTML = '';
         result.data.forEach(supplier => {
             const tr = document.createElement('tr');
@@ -90,15 +90,15 @@ fetchSupplier();
 
 async function submitSupplier() {
     try {
-        const method = action === "create" ? 'POST' : 'PUT';
         const body = {
+            method: action === "create" ? 'create' : 'update',
             nama: document.getElementById('supplier_name').value,
             no_hp: document.getElementById('supplier_no_hp').value
         };
         if (action === "edit" && editSupplierId) {
             body.id = editSupplierId;
         }
-        await callAPI({ url: '../api/supplier.php', method, body });
+        await callAPI({ url: '../api/supplier.php', body });
         fetchSupplier();
     } catch (error) {
         console.error('Gagal menyimpan pemasok:', error);
@@ -115,7 +115,7 @@ document.getElementById('createSupplierForm').addEventListener('submit', async (
 
 async function getEditData(id) {
     try {
-        const result = await callAPI({ url: `../api/supplier.php?id=${id}`, method: 'GET' });
+        const result = await callAPI({ url: '../api/supplier.php', body: { method: 'read', id: id } });
         if (result.data.length > 0) {
             openModal("edit", id);
             document.getElementById('supplier_name').value = result.data[0].nama;

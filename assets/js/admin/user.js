@@ -11,7 +11,7 @@ const createUserBtn = document.getElementById('createUserBtn');
 // Fetch user data
 async function fetchUsers() {
     try {
-        const result = await callAPI({ url: '../api/user.php', method: 'GET' });
+        const result = await callAPI({ url: '../api/user.php', body: { method: 'read' } });
         console.log("result",result);
         
         tbody.innerHTML = '';
@@ -60,13 +60,12 @@ saveUserBtn.addEventListener('click', async function () {
         return;
     }
 
-    const body = { username, password };
+    const body = { method: id ? 'update' : 'create', username, password };
     if (id) body.id = id;
 
     try {
         const result = await callAPI({
             url: '../api/user.php',
-            method: id ? 'PUT' : 'POST',
             body
         });
         if (result.status !== 0) {
@@ -85,7 +84,7 @@ tbody.addEventListener('click', async function (e) {
     if (e.target.classList.contains('editBtn')) {
         const id = e.target.getAttribute('data-id');
         try {
-            const result = await callAPI({ url: `../api/user.php?id=${id}`, method: 'GET' });
+            const result = await callAPI({ url: '../api/user.php', body: { method: 'read', id: parseInt(id) } });
             const user = result.data;
             modalTitle.textContent = 'Edit User';
             userIdInput.value = user.id;
@@ -99,7 +98,7 @@ tbody.addEventListener('click', async function (e) {
         const id = e.target.getAttribute('data-id');
         if (confirm('Yakin hapus user ini?')) {
             try {
-                const result = await callAPI({ url: `../api/user.php?id=${id}`, method: 'DELETE' });
+                const result = await callAPI({ url: '../api/user.php', body: { method: 'delete', id: parseInt(id) } });
                 if (result.status !== 0) {
                     alert(result.message || 'Gagal menghapus user');
                     return;

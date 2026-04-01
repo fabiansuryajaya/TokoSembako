@@ -18,10 +18,10 @@
     <table border="1" cellspacing="0" cellpadding="8">
         <thead>
             <tr>
-                <th>ID</th>
-                <th>Tanggal Pembelian</th>
-                <th>Jumlah Pembelian</th>
-                <th>Nama User</th>
+                <th>Tanggal Pembuatan Data</th>
+                <th>Nama Barang beserta Satuan</th>
+                <th>Nama Supplier</th>
+                <th>Jumlah Restock</th>
                 <th>Aksi</th>
             </tr>
         </thead>
@@ -32,29 +32,42 @@
     <!-- Popup modal -->
     <div id="RestockModal" class="modal" style="display: none;">
         <div class="modal-content" style="position: relative; padding-bottom: 64px;">
-            <h2>Buat Barang</h2>
-            <div style="margin-bottom: 16px; border-bottom: 1px solid #ccc; padding-bottom: 8px;">
+            <h2>Form Restock Barang</h2>
+            <form id="restockForm">
+                <label for="tanggal_pembelian">Tanggal Pembelian:</label>
+                <input type="date" id="tanggal_pembelian" name="tanggal_pembelian" required>
+
+                <label for="supplier_id">Nama Supplier:</label>
+                <select id="supplier_id" name="supplier_id" required style="width: 100%;">
+                    <option value="">Pilih Supplier</option>
+                </select>
+
                 <label for="product_id">Nama Barang:</label>
                 <select id="product_id" name="product_id" required style="width: 100%;">
                     <option value="">Pilih Barang</option>
                 </select>
 
-                <button type="button" id="addProductBtn">Add</button>
-                <button type="button" id="editPriceBtn">Ganti Harga</button>
-            </div>
-            <table border="1" cellspacing="0" cellpadding="8" id="productTable">
-                <thead>
-                    <tr>
-                        <td>Nama</td>
-                        <td>Supplier</td>
-                        <td>Satuan</td>
-                        <td>Harga Beli</td>
-                        <td>Quantity</td>
-                        <td>Total</td>
-                    </tr>
-                </thead>
-                <tbody></tbody>
-            </table>
+                <label for="harga_jual">Harga Jual:</label>
+                <input type="number" id="harga_jual" name="harga_jual" required min="0" placeholder="Masukkan harga jual">
+
+                <label for="harga_beli">Harga Beli:</label>
+                <input type="number" id="harga_beli" name="harga_beli" required min="0" placeholder="Masukkan harga beli">
+
+                <label for="selisih">Selisih / Keuntungan:</label>
+                <input type="number" id="selisih" name="selisih" readonly placeholder="Otomatis">
+
+                <label for="sisa_stock">Sisa Stock Terakhir:</label>
+                <input type="number" id="sisa_stock" name="sisa_stock" readonly placeholder="Otomatis">
+
+                <label for="restock_quantity">Tambahin Stock Baru / Restock:</label>
+                <input type="number" id="restock_quantity" name="restock_quantity" required min="1" placeholder="Jumlah restock">
+
+                <label for="total_stock">Jumlah Stock Baru + Sisa Stock Terakhir:</label>
+                <input type="number" id="total_stock" name="total_stock" readonly placeholder="Otomatis">
+
+                <label for="tax">Tax:</label>
+                <input type="number" id="tax" name="tax" min="0" step="0.01" placeholder="0.00">
+            </form>
 
             <div style="position: absolute; right: 16px; bottom: 16px; text-align: right;">
                 <button type="button" id="closeModalBtn">Batal</button>
@@ -66,19 +79,10 @@
     <!-- Popup modal detail pembelian -->
     <div id="DetailModal" class="modal" style="display: none;">
         <div class="modal-content">
-            <h2>Detail Pembelian</h2>
-            <table border="1" cellspacing="0" cellpadding="8">
-                <thead>
-                    <tr>
-                        <th>ID Produk</th>
-                        <th>Nama Produk</th>
-                        <th>Nama Satuan</th>
-                        <th>Jumlah Pembelian</th>
-                        <th>Harga Pembelian</th>
-                    </tr>
-                </thead>
-                <tbody id="detailTableBody"></tbody>
-            </table>
+            <h2>Detail Restock</h2>
+            <div id="detailContent">
+                <!-- Detail akan diisi oleh JS -->
+            </div>
             <div style="text-align: right;">
                 <button type="button" id="closeDetailModalBtn">Tutup</button>
             </div>
@@ -97,16 +101,39 @@
         to_date.value    = new Date().toISOString().split('T')[0]; // Set to today
 
         const product_list = {};
+        const supplier_list = {};
+
+        async function fetchSupplier() {
+            try {
+                const result = await callAPI({ url: '../api/supplier.php', body: { method: 'read' } });
+                const supplierSelect = document.getElementById('supplier_id');
+                supplierSelect.innerHTML = '<option value="">Pilih Supplier</option>';
+                result.data.forEach(supplier => {
+                    const option = document.createElement('option');
+                    option.value = supplier.id;
+                    option.textContent = supplier.nama;
+                    supplierSelect.appendChild(option);
+                    supplier_list[supplier.id] = supplier;
+                });
+
+                $("#supplier_id").select2({
+                    placeholder: "Pilih Supplier",
+                    allowClear: true
+                });
+            } catch (error) {
+                console.error('Gagal memuat supplier:', error);
+            }
+        }
 
         async function fetchProduct() {
             try {
-                const result = await callAPI({ url: '../api/product.php', method: 'GET' });
+                const result = await callAPI({ url: '../api/product.php', body: { method: 'read' } });
                 const productSelect = document.getElementById('product_id');
                 productSelect.innerHTML = '<option value="">Pilih Barang</option>';
                 result.data.forEach(product => {
                     const option = document.createElement('option');
                     option.value = product.id_product;
-                    option.textContent = product.nama_product + " - " + product.nama_supplier + " - " + product.nama_satuan;
+                    option.textContent = product.nama_product + " - " + product.nama_satuan;
                     productSelect.appendChild(option);
 
                     product_list[product.id_product] = product;
@@ -116,28 +143,41 @@
                 $("#product_id").select2({
                     placeholder: "Pilih Barang",
                     allowClear: true
+                }).on('change', function() {
+                    const productId = $(this).val();
+                    const product = product_list[productId];
+                    if (product) {
+                        document.getElementById('harga_jual').value = product.harga_jual_product;
+                        document.getElementById('sisa_stock').value = product.stok_product;
+                        document.getElementById('harga_beli').value = product.harga_beli_product;
+                        updateSelisih();
+                        updateTotalStock();
+                    }
                 });
             } catch (error) {
                 console.error('Gagal memuat barang:', error);
             }
         }
+        fetchSupplier();
         fetchProduct();
 
         // get data pembelian
         async function fetchPembelian() {
             try {
-                const result = await callAPI({ url: '../api/restock.php', method: 'GET' });
+                const from_date = document.getElementById('from_date').value;
+                const to_date = document.getElementById('to_date').value;
+                const result = await callAPI({ url: '../api/restock.php', body: { method: 'read', from_date, to_date } });
                 const tbody = document.querySelector('table tbody');
                 tbody.innerHTML = ''; // Clear existing rows
 
                 result.data.forEach(item => {
                     const row = document.createElement('tr');
                     row.innerHTML = `
-                        <td>${item.id_pembelian}</td>
                         <td>${item.created_at}</td>
+                        <td>${item.nama_product} - ${item.nama_satuan}</td>
+                        <td>${item.nama_supplier}</td>
                         <td>${item.jumlah_pembelian}</td>
-                        <td>${item.nama_user}</td>
-                        <td><button class="detailBtn" data-id="${item.id_pembelian}">Detail</button></td>
+                        <td><button class="detailBtn" data-id="${item.id_detail_pembelian}">Detail</button></td>
                     `;
                     tbody.appendChild(row);
                 });
@@ -145,30 +185,30 @@
                 // Add event listener for detail buttons
                 document.querySelectorAll('.detailBtn').forEach(button => {
                     button.addEventListener('click', function () {
-                        const idPembelian = this.getAttribute('data-id');
+                        const idDetail = this.getAttribute('data-id');
                         const detailModal = document.getElementById('DetailModal');
-                        const detailTableBody = document.getElementById('detailTableBody');
-
-                        detailTableBody.innerHTML = ''; // Clear existing rows
+                        const detailContent = document.getElementById('detailContent');
                         detailModal.style.display = 'flex';
 
-                        callAPI({ url: `../api/restock.php?id_pembelian=${idPembelian}&action=detail`, method: 'GET' })
+                        callAPI({ url: '../api/restock.php', body: { method: 'read', action: 'detail', id_detail: idDetail } })
                             .then(result => {
-                                const detailData = result.data;
-                                detailData.forEach(detail => {
-                                    const detailRow = document.createElement('tr');
-                                    detailRow.innerHTML = `
-                                        <td>${detail.id_produk}</td>
-                                        <td>${detail.nama_product}</td>
-                                        <td>${detail.nama_satuan}</td>
-                                        <td>${detail.jumlah_pembelian}</td>
-                                        <td>${formatCurrencyIDR(detail.harga_pembelian)}</td>
-                                    `;
-                                    detailTableBody.appendChild(detailRow);
-                                });
+                                const detail = result.data[0];
+                                detailContent.innerHTML = `
+                                    <p><strong>Tanggal Pembelian:</strong> ${detail.created_at}</p>
+                                    <p><strong>Nama Supplier:</strong> ${detail.nama_supplier}</p>
+                                    <p><strong>Nama Barang:</strong> ${detail.nama_product}</p>
+                                    <p><strong>Satuan:</strong> ${detail.nama_satuan}</p>
+                                    <p><strong>Harga Jual:</strong> ${formatCurrencyIDR(detail.harga_jual)}</p>
+                                    <p><strong>Harga Beli:</strong> ${formatCurrencyIDR(detail.harga_pembelian)}</p>
+                                    <p><strong>Selisih:</strong> ${formatCurrencyIDR(detail.harga_jual - detail.harga_pembelian)}</p>
+                                    <p><strong>Sisa Stock Terakhir:</strong> ${detail.stok_product - detail.jumlah_pembelian}</p>
+                                    <p><strong>Jumlah Restock:</strong> ${detail.jumlah_pembelian}</p>
+                                    <p><strong>Total Stock:</strong> ${detail.stok_product}</p>
+                                    <p><strong>Tax:</strong> ${detail.tax}</p>
+                                `;
                             })
                             .catch(error => {
-                                console.error('Gagal memuat detail pembelian:', error);
+                                console.error('Gagal memuat detail:', error);
                             });
                     });
                 });
@@ -179,16 +219,6 @@
 
         fetchPembelian();
 
-        // editPriceBtn
-        const editPriceBtn = document.getElementById('editPriceBtn');
-        editPriceBtn.addEventListener('click', () => {
-            edit_price = !edit_price;
-            const hargaBeliInputs = table.querySelectorAll('.harga_beli');
-            hargaBeliInputs.forEach(input => {
-                input.disabled = !edit_price; // Toggle disabled state
-            });
-        });
-
         // closeDetailModalBtn
         const closeDetailModalBtn = document.getElementById('closeDetailModalBtn');
         closeDetailModalBtn.addEventListener('click', () => {
@@ -196,104 +226,28 @@
             detailModal.style.display = 'none';
         });
 
-        function updateTotal(input) {
-            const row = input.closest('tr');
-            const hargaBeli = parseFloat(row.querySelector('.harga_beli').value);
-            const quantity = parseInt(row.querySelector('.quantity').value);
-            const totalCell = row.querySelector('.total');
-            totalCell.textContent = formatCurrencyIDR(hargaBeli * quantity);
+        function updateSelisih() {
+            const hargaJual = parseFloat(document.getElementById('harga_jual').value) || 0;
+            const hargaBeli = parseFloat(document.getElementById('harga_beli').value) || 0;
+            document.getElementById('selisih').value = hargaJual - hargaBeli;
         }
 
-        // addProductButton
-        const table = document.querySelector('#productTable tbody');
-        const addProductButton = document.getElementById('addProductBtn');
-        addProductButton.addEventListener('click', async () => {
-            const product_id = document.getElementById('product_id').value;
+        function updateTotalStock() {
+            const sisaStock = parseInt(document.getElementById('sisa_stock').value) || 0;
+            const restockQuantity = parseInt(document.getElementById('restock_quantity').value) || 0;
+            document.getElementById('total_stock').value = sisaStock + restockQuantity;
+        }
 
-            const product = product_list[product_id];
-            if (!product) {
-                alert('Silakan pilih barang terlebih dahulu.');
-                return;
-            }
-
-            // Cek apakah produk sudah ada di tabel
-            const existingRow = table.querySelector(`tr[data-id="${product.id_product}"]`);
-            if (existingRow) {
-                // tambah quantity jika produk sudah ada
-                const quantityInput = existingRow.querySelector('.quantity');
-                quantityInput.value = parseInt(quantityInput.value) + 1;
-                updateTotal(quantityInput);
-                return;
-            }
-
-            // Buat elemen tr baru dan append ke table
-            const tr = document.createElement('tr');
-            tr.setAttribute('data-id', product.id_product);
-            tr.innerHTML = `
-                <td>${product.nama_product}</td>
-                <td>${product.nama_supplier}</td>
-                <td>${product.nama_satuan}</td>
-                <td><input type="number" ${edit_price ? '' : 'disabled'} class="harga_beli" value="${product.harga_beli_product}" min="0"></td>
-                <td><input type="number" class="quantity" value="1" min="1"></td>
-                <td class="total">${formatCurrencyIDR(product.harga_beli_product)}</td>
-            `;
-            table.appendChild(tr);
-        });
+        // Event listeners for form inputs
+        document.getElementById('harga_jual').addEventListener('input', updateSelisih);
+        document.getElementById('harga_beli').addEventListener('input', updateSelisih);
+        document.getElementById('restock_quantity').addEventListener('input', updateTotalStock);
 
         // closeModalBtn
         const closeModalBtn = document.getElementById('closeModalBtn');
         closeModalBtn.addEventListener('click', () => {
             const modal = document.getElementById('RestockModal');
             modal.style.display = 'none';
-        });
-
-        // saveRestockBtn
-        const saveRestockBtn = document.getElementById('saveRestockBtn');
-        saveRestockBtn.addEventListener('click', async () => {
-            const rows = table.querySelectorAll('tr');
-            const restockData = [];
-
-            rows.forEach(row => {
-                const productId = row.getAttribute('data-id');
-                const hargaBeliInput = row.querySelector('.harga_beli');
-                const quantityInput = row.querySelector('.quantity');
-                const quantity = parseInt(quantityInput.value);
-                if (quantity > 0) {
-                    restockData.push({
-                        product_id: productId,
-                        harga_beli: parseFloat(hargaBeliInput.value),
-                        quantity: quantity
-                    });
-                }
-            });
-
-            if (restockData.length === 0) {
-                alert('Tidak ada barang yang direstock.');
-                return;
-            }
-
-            const body = {
-                restock: restockData
-            }
-
-            try {
-                const result = await callAPI({
-                    url: '../api/restock.php',
-                    method: 'POST',
-                    body
-                });
-                if (result.status !== 0) {
-                    alert(result.message);
-                    return;
-                }
-                fetchPembelian(); // Refresh the pembelian data
-                alert('Restock berhasil!');
-                table.innerHTML = ''; // Clear the table after saving
-                const modal = document.getElementById('RestockModal');
-                modal.style.display = 'none';
-            } catch (error) {
-                console.error('Gagal menyimpan restock:', error);
-            }
         });
 
         // createProductBtn
@@ -303,13 +257,50 @@
             modal.style.display = 'flex';
         });
 
-        // Delegate quantity input change event to update total
-        table.addEventListener('input', function (e) {
-            if (e.target && e.target.classList.contains('quantity')) {
-                updateTotal(e.target);
-            }
-            if (e.target && e.target.classList.contains('harga_beli')) {
-                updateTotal(e.target);
+        // saveRestockBtn
+        const saveRestockBtn = document.getElementById('saveRestockBtn');
+        saveRestockBtn.addEventListener('click', async () => {
+            try {
+                // Collect form data
+                const formData = {
+                    tanggal: document.getElementById('tanggal_pembelian').value,
+                    supplier_id: document.getElementById('supplier_id').value,
+                    product_id: document.getElementById('product_id').value,
+                    harga_beli: document.getElementById('harga_beli').value,
+                    harga_jual: document.getElementById('harga_jual').value,
+                    restock_quantity: document.getElementById('restock_quantity').value,
+                    tax: document.getElementById('tax').value || 0
+                };
+
+                // Validate required fields
+                if (!formData.tanggal || !formData.supplier_id || !formData.product_id || 
+                    !formData.harga_beli || !formData.harga_jual || !formData.restock_quantity) {
+                    alert('Semua field wajib diisi!');
+                    return;
+                }
+
+                // Send data to API
+                const result = await callAPI({ 
+                    url: '../api/restock.php', 
+                    body: { method: 'create', ...formData } 
+                });
+
+                console.log("result", result);
+                
+                if (result.data.success) {
+                    alert('Restock berhasil disimpan!');
+                    // Close modal
+                    document.getElementById('RestockModal').style.display = 'none';
+                    // Reset form
+                    document.getElementById('restockForm').reset();
+                    // Refresh table
+                    fetchPembelian();
+                } else {
+                    alert('Gagal menyimpan restock: ' + (result.error || 'Unknown error'));
+                }
+            } catch (error) {
+                console.error('Error saving restock:', error);
+                alert('Terjadi kesalahan saat menyimpan restock');
             }
         });
 
@@ -329,3 +320,8 @@
         });
     });
 </script>
+
+<!-- jquery -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="../assets/js/library/select2.min.js"></script>
+<script src="../assets/js/admin/global.js"></script>

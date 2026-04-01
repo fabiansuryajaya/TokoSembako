@@ -3,10 +3,19 @@ require_once("../connection.php");
 
 header('Content-Type: application/json');
 
-$method = $_SERVER['REQUEST_METHOD'];
+$data = json_decode(file_get_contents('php://input'), true);
+
+if (!$data || !isset($data['method'])) {
+    http_response_code(400);
+    echo json_encode(['error' => 'Method tidak disertakan']);
+    exit;
+}
+
+$method = $data['method'];
+
 switch ($method) {
-    case 'GET':
-        $query_data = $_GET;
+    case 'read':
+        $query_data = $data;
         $action = isset($query_data['action']) ? $query_data['action'] : '';
         $id_hutang = isset($query_data['id_hutang']) ? (int)$query_data['id_hutang'] : 0;
         $from_date = isset($query_data['from_date']) ? $conn->real_escape_string($query_data['from_date']) : '';
@@ -70,10 +79,7 @@ switch ($method) {
         echo json_encode($data);
         break;
 
-    case 'POST':
-        // Tambah product baru
-        $data = json_decode(file_get_contents('php://input'), true);
-
+    case 'create':
         $stock = $data['hutang'];
 
         if (!is_array($stock) || empty($stock)) {
@@ -131,9 +137,8 @@ switch ($method) {
 
         echo json_encode(['success' => true]);
         break;
-    case 'PUT':
-        // Tambah product baru
-        $data = json_decode(file_get_contents('php://input'), true);
+
+    case 'update':
         if (isset($data['action']) && $data['action'] == 'edit') {
             $stock = $data['hutang'];
 
@@ -214,14 +219,8 @@ switch ($method) {
         }
 
         // Update status hutang menjadi lunas
-        $query_data = $_GET;
-        if (!isset($query_data['id_hutang'])) {
-            http_response_code(400);
-            echo json_encode(['error' => 'ID hutang tidak diberikan']);
-            exit;
-        }
-        $id_hutang = (int)$query_data['id_hutang'];
-        $status = isset($query_data['status']) ? $query_data['status'] : 'Y';
+        $id_hutang = isset($data['id_hutang']) ? (int)$data['id_hutang'] : 0;
+        $status = isset($data['status']) ? $data['status'] : 'Y';
 
         $sql = "UPDATE penjualan SET status = '$status' WHERE id_penjualan = $id_hutang";
         if ($conn->query($sql) === FALSE) {
@@ -231,15 +230,15 @@ switch ($method) {
         }
         echo json_encode(['success' => true]);
         break;
-    case 'DELETE':
-        // Hapus data hutang
-        $query_data = $_GET;
-        if (!isset($query_data['id_hutang'])) {
+
+    case 'delete':
+        $id_hutang = isset($data['id_hutang']) ? (int)$data['id_hutang'] : 0;
+
+        if ($id_hutang <= 0) {
             http_response_code(400);
             echo json_encode(['error' => 'ID hutang tidak diberikan']);
             exit;
         }
-        $id_hutang = (int)$query_data['id_hutang'];
 
         // Hapus detail penjualan terlebih dahulu
         $sql = "DELETE FROM detail_penjualan WHERE id_penjualan = $id_hutang";
@@ -259,8 +258,9 @@ switch ($method) {
 
         echo json_encode(['success' => true]);
         break;
+
     default:
-        http_response_code(405);
-        echo json_encode(['error' => 'Metode tidak diizinkan']);
+        http_response_code(400);
+        echo json_encode(['error' => 'Method tidak valid']);
         break;
 }

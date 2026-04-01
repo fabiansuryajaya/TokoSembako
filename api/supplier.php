@@ -4,11 +4,19 @@ require_once("../connection.php");
 // Set header response JSON
 header('Content-Type: application/json');
 
-$method = $_SERVER['REQUEST_METHOD'];
+$data = json_decode(file_get_contents('php://input'), true);
+
+if (!$data || !isset($data['method'])) {
+    http_response_code(400);
+    echo json_encode(['error' => 'Method tidak disertakan']);
+    exit;
+}
+
+$method = $data['method'];
 
 switch ($method) {
-    case 'GET':
-        $query_data = $_GET;
+    case 'read':
+        $query_data = $data;
 
         // Ambil semua supplier
         $sql = "SELECT id_supplier as id, nama_supplier as nama, nomor_hp as no_hp FROM supplier WHERE status = 'Y'";
@@ -27,9 +35,8 @@ switch ($method) {
         echo json_encode($suppliers);
         break;
 
-    case 'POST':
+    case 'create':
         // Tambah supplier baru
-        $data = json_decode(file_get_contents('php://input'), true);
 
         if (!isset($data['nama'])) {
             http_response_code(400);
@@ -49,9 +56,8 @@ switch ($method) {
         }
         break;
 
-    case 'PUT':
+    case 'update':
         // Update supplier
-        $data = json_decode(file_get_contents('php://input'), true);
 
         if (!isset($data['id'], $data['nama'])) {
             http_response_code(400);
@@ -72,14 +78,14 @@ switch ($method) {
         }
         break;
 
-    case 'DELETE':
-        if (!isset($_GET['id'])) {
+    case 'delete':
+        if (!isset($data['id'])) {
             http_response_code(400);
             echo json_encode(['error' => 'ID tidak disertakan']);
             exit;
         }
 
-        $id = (int)$_GET['id'];
+        $id = (int)$data['id'];
         $sql = "UPDATE supplier SET status = 'N' WHERE id_supplier=$id";
         if ($conn->query($sql) === TRUE) {
             echo json_encode(['success' => true]);
@@ -90,7 +96,7 @@ switch ($method) {
         break;
 
     default:
-        http_response_code(405);
-        echo json_encode(['error' => 'Metode tidak diizinkan']);
+        http_response_code(400);
+        echo json_encode(['error' => 'Method tidak valid']);
         break;
 }

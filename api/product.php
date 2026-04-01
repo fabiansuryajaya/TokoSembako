@@ -3,11 +3,19 @@ require_once("../connection.php");
 
 header('Content-Type: application/json');
 
-$method = $_SERVER['REQUEST_METHOD'];
+$data = json_decode(file_get_contents('php://input'), true);
+
+if (!$data || !isset($data['method'])) {
+    http_response_code(400);
+    echo json_encode(['error' => 'Method tidak disertakan']);
+    exit;
+}
+
+$method = $data['method'];
 
 switch ($method) {
-    case 'GET':
-        $query_data = $_GET;
+    case 'read':
+        $query_data = $data;
         $where =[];
         $status = isset($query_data['status']) ? $query_data['status'] : 'Y';
 
@@ -39,9 +47,8 @@ switch ($method) {
         echo json_encode($products);
         break;
 
-    case 'POST':
+    case 'create':
         // Tambah product baru
-        $data = json_decode(file_get_contents('php://input'), true);
 
         if (!isset($data['nama'])) {
             http_response_code(400);
@@ -66,9 +73,8 @@ switch ($method) {
         }
         break;
 
-    case 'PUT':
+    case 'update':
         // Update product
-        $data = json_decode(file_get_contents('php://input'), true);
 
         if (!isset($data['id'])) {
             http_response_code(400);
@@ -106,14 +112,14 @@ switch ($method) {
         }
         break;
 
-    case 'DELETE':
-        if (!isset($_GET['id'])) {
+    case 'delete':
+        if (!isset($data['id'])) {
             http_response_code(400);
             echo json_encode(['error' => 'ID tidak disertakan']);
             exit;
         }
 
-        $id = (int)$_GET['id'];
+        $id = (int)$data['id'];
         $sql = "UPDATE product SET status = 'N' WHERE id_product=$id";
         if ($conn->query($sql) === TRUE) {
             echo json_encode(['success' => true]);
@@ -124,7 +130,7 @@ switch ($method) {
         break;
 
     default:
-        http_response_code(405);
-        echo json_encode(['error' => 'Metode tidak diizinkan']);
+        http_response_code(400);
+        echo json_encode(['error' => 'Method tidak valid']);
         break;
 }

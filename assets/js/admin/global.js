@@ -1,13 +1,13 @@
 /**
  * Kirim request POST ke API
  * @param {string} url - URL endpoint (misal: 'api/auth.php')
- * @param {FormData} formData - Data form (FormData)
+ * @param {object} body - Data body (object)
  * @returns {Promise<object>} - Response JSON
  */
-async function callAPI({url, body, method = 'POST'}) {
+async function callAPI({url, body}) {
   try {
     const response = await fetch(url, {
-      method,
+      method: 'POST',
       body : JSON.stringify(body),
       headers: {
         'Content-Type': 'application/json'

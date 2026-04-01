@@ -3,11 +3,19 @@ require_once("../connection.php");
 
 header('Content-Type: application/json');
 
-$method = $_SERVER['REQUEST_METHOD'];
+$data = json_decode(file_get_contents('php://input'), true);
+
+if (!$data || !isset($data['method'])) {
+    http_response_code(400);
+    echo json_encode(['error' => 'Method tidak disertakan']);
+    exit;
+}
+
+$method = $data['method'];
 
 switch ($method) {
-    case 'GET':
-        $query_data = $_GET;
+    case 'read':
+        $query_data = $data;
         $action = isset($query_data['action']) ? $query_data['action'] : '';
         $id_penjualan = isset($query_data['id_penjualan']) ? (int)$query_data['id_penjualan'] : 0;
         $from_date = isset($query_data['from_date']) ? $conn->real_escape_string($query_data['from_date']) : ''; // YYYY-MM-DD
@@ -69,10 +77,7 @@ switch ($method) {
         echo json_encode($data);
         break;
 
-    case 'POST':
-        // Tambah product baru
-        $data = json_decode(file_get_contents('php://input'), true);
-
+    case 'create':
         $stock = $data['penjualan'];
 
         if (!is_array($stock) || empty($stock)) {
@@ -127,10 +132,8 @@ switch ($method) {
 
         echo json_encode(['success' => true]);
         break;
-    case 'PUT':
-        // Edit penjualan
-        $data = json_decode(file_get_contents('php://input'), true);
 
+    case 'update':
         $edit_penjualan_id = isset($data['edit_penjualan_id']) ? (int)$data['edit_penjualan_id'] : 0;
         $stock = $data['penjualan'];
         if ($edit_penjualan_id <= 0 || !is_array($stock) || empty($stock)) {
@@ -185,10 +188,9 @@ switch ($method) {
 
         echo json_encode(['success' => true]);
         break;
-    case 'DELETE':
-        // Hapus penjualan
-        parse_str(file_get_contents('php://input'), $delete_vars);
-        $id_penjualan = isset($delete_vars['id_penjualan']) ? (int)$delete_vars['id_penjualan'] : 0;
+
+    case 'delete':
+        $id_penjualan = isset($data['id_penjualan']) ? (int)$data['id_penjualan'] : 0;
 
         if ($id_penjualan <= 0) {
             http_response_code(400);
@@ -206,8 +208,9 @@ switch ($method) {
 
         echo json_encode(['success' => true]);
         break;
+
     default:
-        http_response_code(405);
-        echo json_encode(['error' => 'Metode tidak diizinkan']);
+        http_response_code(400);
+        echo json_encode(['error' => 'Method tidak valid']);
         break;
 }

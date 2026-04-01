@@ -56,7 +56,7 @@ const memberTable = document.querySelector('.member-page tbody');
 
 async function fetchMember() {
     try {
-        const result = await callAPI({ url: '../api/member.php', method: 'GET' });
+        const result = await callAPI({ url: '../api/member.php', body: { method: 'read' } });
         memberTable.innerHTML = '';
         result.data.forEach(member => {
             const tr = document.createElement('tr');
@@ -90,15 +90,15 @@ fetchMember();
 
 async function submitMember() {
     try {
-        const method = action === "create" ? 'POST' : 'PUT';
         const body = {
+            method: action === "create" ? 'create' : 'update',
             nama: document.getElementById('member_name').value,
             nomor_hp: document.getElementById('nomor_hp').value
         };
         if (action === "edit" && editMemberId) {
             body.id = editMemberId;
         }
-        await callAPI({ url: '../api/member.php', method, body });
+        await callAPI({ url: '../api/member.php', body });
         fetchMember();
     } catch (error) {
         console.error('Gagal menyimpan member:', error);
@@ -115,7 +115,7 @@ document.getElementById('createMemberForm').addEventListener('submit', async (e)
 
 async function getEditData(id) {
     try {
-        const result = await callAPI({ url: `../api/member.php?id=${id}`, method: 'GET' });
+        const result = await callAPI({ url: '../api/member.php', body: { method: 'read', id: id } });
         if (result.data.length > 0) {
             openModal("edit", id);
             document.getElementById('member_name').value = result.data[0].nama;
