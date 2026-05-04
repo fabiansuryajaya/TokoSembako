@@ -26,7 +26,7 @@
         </form>
     </main>
 
-    <script src="assets/js/global.js"></script>
+    <script src="assets/js/admin/global.js"></script>
     <script>
         document.getElementById('login-form').addEventListener('submit', async function (e) {
             e.preventDefault();

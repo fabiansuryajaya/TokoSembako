@@ -31,7 +31,7 @@
 
     <!-- Popup modal -->
     <div id="RestockModal" class="modal" style="display: none;">
-        <div class="modal-content" style="position: relative; padding-bottom: 64px;">
+        <div class="modal-content" style="position: relative;">
             <h2>Form Restock Barang</h2>
             <form id="restockForm">
                 <label for="tanggal_pembelian">Tanggal Pembelian:</label>
@@ -69,7 +69,7 @@
                 <input type="number" id="tax" name="tax" min="0" step="0.01" placeholder="0.00">
             </form>
 
-            <div style="position: absolute; right: 16px; bottom: 16px; text-align: right;">
+            <div style="position: sticky; bottom: 0; margin-top: 16px; padding-top: 12px; text-align: right; background: #fefefe; border-top: 1px solid #ddd;">
                 <button type="button" id="closeModalBtn">Batal</button>
                 <button type="button" id="saveRestockBtn">Simpan</button>
             </div>
@@ -162,6 +162,14 @@
         fetchProduct();
 
         // get data pembelian
+        function formatDateToDDMMYYYY(dateInput) {
+            if (!dateInput) return '-';
+            const dateOnly = String(dateInput).split(' ')[0];
+            const parts = dateOnly.split('-');
+            if (parts.length !== 3) return dateOnly;
+            return `${parts[2]}-${parts[1]}-${parts[0]}`;
+        }
+
         async function fetchPembelian() {
             try {
                 const from_date = document.getElementById('from_date').value;
@@ -173,11 +181,11 @@
                 result.data.forEach(item => {
                     const row = document.createElement('tr');
                     row.innerHTML = `
-                        <td>${item.created_at}</td>
+                        <td>${formatDateToDDMMYYYY(item.created_at)}</td>
                         <td>${item.nama_product} - ${item.nama_satuan}</td>
                         <td>${item.nama_supplier}</td>
                         <td>${item.jumlah_pembelian}</td>
-                        <td><button class="detailBtn" data-id="${item.id_detail_pembelian}">Detail</button></td>
+                        <td><button class="detailBtn" data-id="${item.id_detail_pembelian}">Detail</button> <button class="deleteBtn" data-id="${item.id_detail_pembelian}">Delete</button></td>
                     `;
                     tbody.appendChild(row);
                 });
@@ -194,7 +202,7 @@
                             .then(result => {
                                 const detail = result.data[0];
                                 detailContent.innerHTML = `
-                                    <p><strong>Tanggal Pembelian:</strong> ${detail.created_at}</p>
+                                    <p><strong>Tanggal Pembelian:</strong> ${formatDateToDDMMYYYY(detail.created_at)}</p>
                                     <p><strong>Nama Supplier:</strong> ${detail.nama_supplier}</p>
                                     <p><strong>Nama Barang:</strong> ${detail.nama_product}</p>
                                     <p><strong>Satuan:</strong> ${detail.nama_satuan}</p>
@@ -212,12 +220,35 @@
                             });
                     });
                 });
+
+                // Add event listener for delete buttons
+                document.querySelectorAll('.deleteBtn').forEach(button => {
+                    button.addEventListener('click', function () {
+                        const id = this.getAttribute('data-id');
+                        if (confirm('Apakah Anda yakin ingin menghapus restock ini?')) {
+                            callAPI({ url: '../api/restock.php', body: { method: 'delete', id: id } })
+                                .then(result => {
+                                    if (result.success || (result.data && result.data.success)) {
+                                        alert('Restock berhasil dihapus!');
+                                        fetchPembelian(); // Refresh table
+                                    } else {
+                                        alert('Gagal menghapus restock: ' + (result.error || 'Unknown error'));
+                                    }
+                                })
+                                .catch(error => {
+                                    console.error('Error deleting restock:', error);
+                                    alert('Terjadi kesalahan saat menghapus restock');
+                                });
+                        }
+                    });
+                });
             } catch (error) {
                 console.error('Gagal memuat pembelian:', error);
             }
         }
 
         fetchPembelian();
+        document.getElementById('filter_btn').addEventListener('click', fetchPembelian);
 
         // closeDetailModalBtn
         const closeDetailModalBtn = document.getElementById('closeDetailModalBtn');
@@ -284,8 +315,6 @@
                     url: '../api/restock.php', 
                     body: { method: 'create', ...formData } 
                 });
-
-                console.log("result", result);
                 
                 if (result.data.success) {
                     alert('Restock berhasil disimpan!');
@@ -293,8 +322,13 @@
                     document.getElementById('RestockModal').style.display = 'none';
                     // Reset form
                     document.getElementById('restockForm').reset();
+                    // Reset select2 value
+                    $('#supplier_id').val(null).trigger('change');
+                    $('#product_id').val(null).trigger('change');
                     // Refresh table
                     fetchPembelian();
+                    // Refresh product list (stok/harga terbaru)
+                    fetchProduct();
                 } else {
                     alert('Gagal menyimpan restock: ' + (result.error || 'Unknown error'));
                 }
