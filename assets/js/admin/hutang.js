@@ -655,7 +655,6 @@ $(document).ready(function () {
         const grandTotalValue = showGrandTotal ? subtotal + hargaOngkir : subtotal;
 
         grand_total.value = formatCurrencyIDR(grandTotalValue);
-        grand_total_row.style.display = 'flex';
         updateKembalian();
     };
 
