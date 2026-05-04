@@ -181,10 +181,12 @@ $(document).ready(function () {
                                 <td style="border:0;font-weight:bold;padding-right:5mm;">${total_ongkir}</td>
                             </tr>
                         ` : ''}
-                        <tr>
-                            <td style="border:0;font-weight:bold;padding-right:5mm;">Grand Total:</td>
-                            <td style="border:0;font-weight:bold;padding-right:5mm;">${total_tagihan}</td>
-                        </tr>
+                        ${total_ongkir ? `
+                            <tr>
+                                <td style="border:0;font-weight:bold;padding-right:5mm;">Grand Total:</td>
+                                <td style="border:0;font-weight:bold;padding-right:5mm;">${total_tagihan}</td>
+                            </tr>
+                        ` : ''}
                         ${total_bayar ? `
                             <tr>
                                 <td style="border:0;font-weight:bold;padding-right:5mm;">Pembayaran:</td>
@@ -647,19 +649,13 @@ $(document).ready(function () {
         return subtotal;
     }
 
-    function hasOngkirValue() {
-        const hargaOngkir = parseFloat(harga_ongkir.value);
-        return !isNaN(hargaOngkir) && hargaOngkir > 0;
-    }
-
     updateGrandTotal = () => {
         const subtotal = getSubtotalFromTable();
         const hargaOngkir = parseFloat(harga_ongkir.value) || 0;
-        const showGrandTotal = hasOngkirValue();
         const grandTotalValue = showGrandTotal ? subtotal + hargaOngkir : subtotal;
 
         grand_total.value = formatCurrencyIDR(grandTotalValue);
-        grand_total_row.style.display = showGrandTotal ? 'flex' : 'none';
+        grand_total_row.style.display = 'flex';
         updateKembalian();
     };
 
