@@ -181,12 +181,10 @@ $(document).ready(function () {
                                 <td style="border:0;font-weight:bold;padding-right:5mm;">${total_ongkir}</td>
                             </tr>
                         ` : ''}
-                        ${total_ongkir ? `
-                            <tr>
-                                <td style="border:0;font-weight:bold;padding-right:5mm;">Grand Total:</td>
-                                <td style="border:0;font-weight:bold;padding-right:5mm;">${total_tagihan}</td>
-                            </tr>
-                        ` : ''}
+                        <tr>
+                            <td style="border:0;font-weight:bold;padding-right:5mm;">Grand Total:</td>
+                            <td style="border:0;font-weight:bold;padding-right:5mm;">${total_tagihan}</td>
+                        </tr>
                         ${total_bayar ? `
                             <tr>
                                 <td style="border:0;font-weight:bold;padding-right:5mm;">Pembayaran:</td>
