@@ -121,11 +121,15 @@ $(document).ready(function () {
                 const detail = trx.detail || [];
 
                 const total_trx = detail.reduce((a,b)=>a+b.jumlah_hutang*b.harga_hutang,0);
+                const totalOngkirValue = parseFloat(trx.total_ongkir) || 0;
+                const totalPembayaranValue = parseFloat(trx.total_pembayaran) || 0;
+                const totalTagihanValue = total_trx + totalOngkirValue;
+                const totalKembalianValue = totalPembayaranValue - totalTagihanValue;
 
-                const total_ongkir    = (trx.total_ongkir     != 0) ? formatCurrencyIDR(trx.total_ongkir)                 : "";
-                const total_bayar     = (trx.total_pembayaran != 0) ? formatCurrencyIDR(trx.total_pembayaran)             : "";
-                const total_kembalian = (trx.total_pembayaran != 0) ? formatCurrencyIDR(trx.total_pembayaran - trx.total_ongkir - total_trx) : "";
-                const total_tagihan   = (trx.total_pembayaran != 0) ? formatCurrencyIDR((1 * total_trx) + (1 * trx.total_ongkir)) : "";
+                const total_ongkir = totalOngkirValue !== 0 ? formatCurrencyIDR(totalOngkirValue) : "";
+                const total_bayar = totalPembayaranValue !== 0 ? formatCurrencyIDR(totalPembayaranValue) : "";
+                const total_kembalian = totalPembayaranValue !== 0 ? formatCurrencyIDR(totalKembalianValue) : "";
+                const total_tagihan = formatCurrencyIDR(totalTagihanValue);
 
                 let html = `
                     <div style="text-align:center;font-weight:bold;font-size:15px;letter-spacing:1px;margin-bottom:2mm;">
@@ -176,12 +180,10 @@ $(document).ready(function () {
                                 <td style="border:0;font-weight:bold;padding-right:5mm;">${total_ongkir}</td>
                             </tr>
                         ` : ''}
-                        ${total_tagihan ? `
-                            <tr>
-                                <td style="border:0;font-weight:bold;padding-right:5mm;">Total Bayar:</td>
-                                <td style="border:0;font-weight:bold;padding-right:5mm;">${total_tagihan}</td>
-                            </tr>
-                        ` : ''}
+                        <tr>
+                            <td style="border:0;font-weight:bold;padding-right:5mm;">Grand Total:</td>
+                            <td style="border:0;font-weight:bold;padding-right:5mm;">${total_tagihan}</td>
+                        </tr>
                         ${total_bayar ? `
                             <tr>
                                 <td style="border:0;font-weight:bold;padding-right:5mm;">Pembayaran:</td>
