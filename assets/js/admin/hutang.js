@@ -652,7 +652,7 @@ $(document).ready(function () {
     updateGrandTotal = () => {
         const subtotal = getSubtotalFromTable();
         const hargaOngkir = parseFloat(harga_ongkir.value) || 0;
-        const grandTotalValue = showGrandTotal ? subtotal + hargaOngkir : subtotal;
+        const grandTotalValue = subtotal + hargaOngkir;
 
         grand_total.value = formatCurrencyIDR(grandTotalValue);
         updateKembalian();
