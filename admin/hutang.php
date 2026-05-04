@@ -65,7 +65,7 @@
             </table>
 
             <!-- tambahkan input total bayar dan total kembalian -->
-            <div id="grand_total_row" style="justify-content: flex-end; gap: 16px; margin-top: 8px; align-items: center;">
+            <div id="grand_total_row" style="display: flex; justify-content: flex-end; gap: 16px; margin-top: 8px; align-items: center;">
                 <label for="grand_total" style="margin-bottom:0;font-weight:bold;">Grand Total:</label>
                 <input type="text" id="grand_total" name="grand_total" value="0" readonly style="width: 120px; padding: 4px; background: #f5f5f5; font-weight:bold;">
             </div>
