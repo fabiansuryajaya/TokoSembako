@@ -16,6 +16,7 @@ $(document).ready(function () {
     const nomor_hp = '0818-395-768';
 
     const grand_total = document.getElementById('grand_total');
+    const grand_total_row = document.getElementById('grand_total_row');
     const total_bayar = document.getElementById('total_bayar');
     const total_kembalian = document.getElementById('total_kembalian');
     const harga_ongkir = document.getElementById('harga_ongkir');
@@ -180,10 +181,12 @@ $(document).ready(function () {
                                 <td style="border:0;font-weight:bold;padding-right:5mm;">${total_ongkir}</td>
                             </tr>
                         ` : ''}
-                        <tr>
-                            <td style="border:0;font-weight:bold;padding-right:5mm;">Grand Total:</td>
-                            <td style="border:0;font-weight:bold;padding-right:5mm;">${total_tagihan}</td>
-                        </tr>
+                        ${total_ongkir ? `
+                            <tr>
+                                <td style="border:0;font-weight:bold;padding-right:5mm;">Grand Total:</td>
+                                <td style="border:0;font-weight:bold;padding-right:5mm;">${total_tagihan}</td>
+                            </tr>
+                        ` : ''}
                         ${total_bayar ? `
                             <tr>
                                 <td style="border:0;font-weight:bold;padding-right:5mm;">Pembayaran:</td>
@@ -633,32 +636,47 @@ $(document).ready(function () {
     });
 
     // Update grand total and total kembalian
-    updateGrandTotal = () => {
-        let grandTotal = 0;
+    function getSubtotalFromTable() {
+        let subtotal = 0;
         const rows = table.querySelectorAll('tr');
         rows.forEach(row => {
             const totalCell = row.querySelector('.total');
             if (totalCell) {
                 const totalValue = parseFloat(totalCell.textContent.replace(/[Rp. ]+/g, ""));
-                grandTotal += isNaN(totalValue) ? 0 : totalValue;
+                subtotal += isNaN(totalValue) ? 0 : totalValue;
             }
         });
-        grand_total.value = formatCurrencyIDR(grandTotal);
+        return subtotal;
+    }
+
+    function hasOngkirValue() {
+        const hargaOngkir = parseFloat(harga_ongkir.value);
+        return !isNaN(hargaOngkir) && hargaOngkir > 0;
+    }
+
+    updateGrandTotal = () => {
+        const subtotal = getSubtotalFromTable();
+        const hargaOngkir = parseFloat(harga_ongkir.value) || 0;
+        const showGrandTotal = hasOngkirValue();
+        const grandTotalValue = showGrandTotal ? subtotal + hargaOngkir : subtotal;
+
+        grand_total.value = formatCurrencyIDR(grandTotalValue);
+        grand_total_row.style.display = showGrandTotal ? 'flex' : 'none';
         updateKembalian();
     };
 
     updateKembalian = () => {
         const totalBayar = parseFloat(total_bayar.value) || 0;
-        const grandTotal = parseFloat(grand_total.value.replace(/[Rp. ]+/g, "")) || 0;
+        const subtotal = getSubtotalFromTable();
         const hargaOngkir = parseFloat(harga_ongkir.value) || 0;
-        const kembalian = totalBayar - grandTotal - hargaOngkir;
+        const kembalian = totalBayar - subtotal - hargaOngkir;
 
         total_kembalian.value = formatCurrencyIDR(kembalian);
     };
 
     // totalBayar change
     total_bayar.addEventListener('input', updateKembalian);
-    harga_ongkir.addEventListener('input', updateKembalian);
+    harga_ongkir.addEventListener('input', updateGrandTotal);
 
     // removeBtn
     deleteRow = (btn) => {
